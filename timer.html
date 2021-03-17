@@ -1,0 +1,463 @@
+<!--
+	Timer with HTML5 Notifications
+	Dominik Rüegger
+	v 0.3	11. October 2017
+	v 0.2 	13. November 2015
+	v 0.1 	6. September 2015
+-->
+
+<html >
+<head>
+<meta charset="utf-8">
+<style>
+
+body {
+	font-family: 'Source Sans Pro', 'Lucida Grande', sans-serif;
+	background-color: gray;
+	font-size: 1.2em;
+}
+
+#main {
+	max-width: 20em;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#display {
+	padding: 0.2em;
+	text-align: center;
+	color: white;
+	text-shadow: 0px 0px 16px #ccf;
+	background-color: #888; /*#88888a;*/
+	border-radius: 20px;
+	/*border: 1px solid #aaa;*/
+}
+
+#box {
+	background-color: #888;
+	color: white;
+	padding: 1em;
+	padding-top: 0em;
+	/*border: 8px solid #999;*/
+	border-radius: 25px;
+	margin-top: 1em;
+}
+
+#history {
+	font-size: 0.35em;
+	color: #aaa;
+	padding: 1em;
+}
+
+#input {
+	font-size: 0.4em;
+	background-color: inherit;
+	margin-top: 2em;
+	width: 100%;
+	border: 0px;
+	border-bottom: 1px solid #aaa;
+	text-align: center;
+	/*margin-bottom: 0.5em;*/
+	color: white;
+	text-shadow: 0px 0px 10px #ccf;
+}
+
+#timebox-input {
+	font-size: 0.4em;
+	background-color: inherit;
+	margin-top: 1em;
+	width: 100%;
+	color: #bbb;
+	text-align: center;
+	margin-bottom: 0.5em;
+}
+
+#timebox-input > input {
+	font-size: inherit;
+	color: inherit;
+	text-align: inherit;
+	background-color: inherit;
+	border: 0px;
+	border-bottom: 1px solid #aaa;
+	color: white;
+	text-shadow: 0px 0px 10px #ccf;
+}
+
+#timebox-input > input:focus, #input:focus {
+	background-color: #888;
+	color: white;
+}
+
+#timebox-number.expired {
+	background-color: #768;
+}
+
+#timebox-frame {
+	background-color: inherit;
+	height: 2px;
+	position: relative;
+}
+
+#timebox-bar {
+	background-color: white;
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 2px;
+	width: 0%;
+}
+
+
+button {
+	color: #fff;
+    background-color: #559;
+    border: 0px;
+    border-radius: 5px;
+    padding: 3px 4px;
+    font-size: 0.35em; /*13px;*/
+    text-shadow: 0px 0px 10px #fff;
+    width: 4em;
+    border-bottom: 1px solid #999;
+}
+
+button:active {
+	border-bottom: 1px solid #bbb;
+}
+
+button.break {
+    background-color: #556;
+}
+
+button.stop {
+    background-color: #446;
+}
+
+.button-row {
+	text-align: center;
+}
+
+</style>
+<script type="text/javascript">
+
+var KEY = "history";
+
+window.HISTORY = JSON.parse(window.localStorage.getItem(KEY) ||  "null") || [];
+
+function displayInHistory(time, event){
+	var p = document.createElement("div");
+	p.textContent += time + ": " + event;
+	var parent = document.getElementById('history');
+	parent.insertAdjacentElement('afterbegin', p);
+}
+
+function addToHistory(time, event){
+	window.HISTORY.push({time: time, event: event});
+	window.localStorage.setItem(KEY, JSON.stringify(window.HISTORY));
+	console.log(window.HISTORY);
+	to_remove = 3; // don't show seconds
+	displayInHistory(("" + time).substr(0,24-to_remove).replace(/ 20\d\d /, " "), event);
+}
+
+
+if (typeof(Storage) !== "undefined") {
+    // Code for localStorage/sessionStorage.
+} else {
+    alert("no local storage!");
+}
+
+function getTopic() {
+	return document.getElementById('input').value;
+}
+
+function getTimebox() {
+	return document.getElementById('timebox-number').value;
+}
+
+function setTimeboxBar(total, remaining){
+	document.getElementById('timebox-bar').style.width = (100 * remaining / total) + "%"
+}
+
+function setTimebox(milliseconds) {
+	var el = document.getElementById('timebox-number')
+	var expired;
+	var newValue;
+	if (milliseconds != null){
+		if (milliseconds <= 0){
+			expired = true;
+		} else {
+			expired = false;
+		}
+		newValue = Math.floor(milliseconds / 60000);
+	
+	} else {
+		expired = false;
+		newValue = "";
+	}
+	
+	if (el !== document.activeElement){ 
+		el.value = newValue;
+	}
+	
+	if (expired){
+		el.setAttribute("class", "expired")
+	} else {
+		el.setAttribute("class", "")
+	}
+}
+
+class Timebox {
+  constructor(milliseconds) {
+  	this.total = milliseconds
+    this.milliseconds = milliseconds
+    this.alerts = [milliseconds/2, milliseconds/5, milliseconds/10, 5 * 60000]
+  }
+  
+  setTime(milliseconds){
+  	var delta = this.milliseconds - milliseconds;
+  	this.passTime(delta)
+  }
+  
+  passTime(milliseconds){
+  	var nextMillis = this.milliseconds - milliseconds
+
+  	for (const a of this.alerts){
+  		if (a < this.milliseconds && a >= nextMillis){
+  			notifyTimebox("Timebox", Math.floor(a / 60000) + " minutes (" + Math.round(a/this.total * 100) + "%) remaining.", 2)
+  		}
+  	}
+  	
+  	if (nextMillis < 0){
+  		nextMillis = 0
+  	}
+  	
+  	this.milliseconds = nextMillis
+  	setTimebox(nextMillis)
+  	setTimeboxBar(this.total, this.milliseconds)
+  }
+}
+
+function stopTimer() {
+	console.log("Stopping timer.");
+	window.clearTimeout(window.DRTIMER);
+	window.clearTimeout(window.NotificationTimer);
+	window.clearTimeout(window.TimeboxNotificationTimer);
+	window.NotificationTimerFlashes = 0;
+	addToHistory(new Date(), "Stopped Timer.");
+}
+
+var timeboxes = {}
+
+function startTimer(minutes, type, gentle) {
+	var timerValue = minutes * 60 * 1000;
+	var interval = 1000;
+	var topicString = "";
+	var topic = getTopic();
+	if (topic && topic !== ""){
+		topicString = topicString + " [ " + topic + " ] ";
+	}
+	if (timeboxMinutes){
+		
+	}
+	
+	stopTimer();
+	
+	// get time box minutes
+	timeboxValue = getTimebox()
+	
+	if ((timeboxValue != "") && (timeboxValue != "0")){
+		var timeboxMinutes = parseInt(timeboxValue)
+		millis = timeboxMinutes * 60000
+		if (!(timeboxes[topic]) || timeboxes[topic].milliseconds == 0 ) {
+			console.log("New Timebox: " + millis)
+			timeboxes[topic] = new Timebox(millis)
+		} else {
+			console.log("Updating Timebox: " + millis)
+			timeboxes[topic].setTime(millis)
+		}
+		if (type == "WORK"){
+			topicString = topicString + " [max. " + timeboxValue + " min]"
+		}
+		
+	} else {
+		timeboxes = {} // reset time boxes
+		setTimebox(null)
+	}	
+	
+	console.log("Starting timer: " + minutes + " minutes." + topicString);
+	addToHistory(new Date(), type + ": " + minutes + " minutes." + topicString);
+	
+	
+	function time(milliseconds){
+		var remainingMinutes = Math.floor(milliseconds / 60000);
+		var seconds = milliseconds / 1000 - remainingMinutes * 60;
+		
+		if (seconds < 10) {seconds = "0"+seconds;}
+		document.getElementById('display').innerHTML = gentle ? "I'll remind you in "+remainingMinutes+" minutes." : remainingMinutes + ":" + seconds;
+		
+		if (milliseconds > 0){
+			window.DRTIMER = window.setTimeout(function(){
+				time(milliseconds - interval);
+			}, interval);
+			
+			if (timeboxes[topic] && type == "WORK"){
+				timeboxes[topic].passTime(interval)
+			}
+			
+		} else {
+			console.log("Timer expired.");
+			addToHistory(new Date(), "Timer expired.");
+		
+			milliseconds = 0;
+			if (gentle) {
+				notify("Timer", "Don't you want to start a timer?", gentle);
+				time(timerValue);
+			} else {
+				notify("Timer Alert", minutes + " minutes passed.");
+			}
+		}
+
+	}
+	
+	time(timerValue);
+}
+
+function notify(title, body, gentle){
+			if(! ('Notification' in window) ){
+				alert('Web Notification is not supported');
+				return;
+			}
+	
+			if (!window.NotificationTimerFlashes){
+				window.NotificationTimerFlashes = gentle ? 1 : 10;
+			}
+
+			Notification.requestPermission(function(permission){
+				var notification = new Notification(title,{silent: true, body:body, icon:"data:image/png;base64,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"});
+			});
+			
+			window.clearTimeout(window.NotificationTimer);
+
+			if (window.NotificationTimerFlashes > 0){
+				console.log("Notifying in 15 seconds.");
+				window.NotificationTimer = window.setTimeout(function(){
+					notify(title, body);
+				}, 15000);
+				window.NotificationTimerFlashes--;
+			}
+}
+
+
+function notifyTimebox(title, body, times){
+			if(! ('Notification' in window) ){
+				alert('Web Notification is not supported');
+				return;
+			}
+
+			Notification.requestPermission(function(permission){
+				var notification = new Notification(title,{silent: false, body:body, icon:"data:image/png;base64,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"});
+			});
+			
+			window.clearTimeout(window.TimeboxNotificationTimer);
+			
+			times = times - 1
+
+			if (times > 0){
+				window.TimeboxNotificationTimer = window.setTimeout(function(){
+					notifyTimebox(title, body, times);
+				}, 5000);
+			}
+}
+
+
+document.addEventListener('DOMContentLoaded',function(){
+		document.getElementById('break.5').addEventListener('click',function(){
+			startTimer(0.5, "BREAK");
+		});
+
+		document.getElementById('break1').addEventListener('click',function(){
+			startTimer(1, "BREAK");
+		});
+		
+		document.getElementById('break2').addEventListener('click',function(){
+			startTimer(2, "BREAK");
+		});
+
+		document.getElementById('break5').addEventListener('click',function(){
+			startTimer(5, "BREAK");
+		});
+		
+		document.getElementById('break10').addEventListener('click',function(){
+			startTimer(10, "BREAK");
+		});
+		
+		document.getElementById('break15').addEventListener('click',function(){
+			startTimer(15, "BREAK");
+		});
+		
+		document.getElementById('work25').addEventListener('click',function(){
+			startTimer(25, "WORK");
+		});
+
+		document.getElementById('work15').addEventListener('click',function(){
+			startTimer(15, "WORK");
+		});
+		
+		document.getElementById('stop1h').addEventListener('click',function(){
+			startTimer(60, "STOP", true);
+		});
+		
+		document.getElementById('stop2h').addEventListener('click',function(){
+			startTimer(120, "STOP", true);
+		});
+		
+		document.getElementById('timerTest').addEventListener('click',function(){
+			startTimer(0.1, "TEST");
+		});		
+		
+		startTimer(30, "STOP", true); // start a reminder right away.
+		
+		
+		// load history
+		
+		
+	});
+</script>
+<title>Timer</title>
+</head>
+<body>
+<div id="main" style="font-size: 2em">
+<div id="box">
+	<br/>
+	<div id="display"></div>
+	<input id="input" type="text"/>
+	<div id="timebox-frame">
+		<div id="timebox-bar"></div>
+	</div>
+	<div id="timebox-input">
+		Time box:
+		<input id="timebox-number" type="text"/>
+		minutes
+	</div>
+	<div class="button-row">
+		<span class="group">
+			<button class="work" id="work15">15 min</button>
+			<button class="work" id="work25">25 min</button>
+		</span>
+		<span class="group">
+			<button class="break" id="break.5">30 sec</button>
+			<button class="break" id="break1">1 min</button>
+			<button class="break" id="break2">2 min</button>
+			<button class="break" id="break5">5 min</button>
+			<button class="break" id="break10">10 min</button>
+			<button class="break" id="break15">15 min</button>
+		</span>
+		<span class="group">
+			<button class="stop" id="stop1h">1 h</button>
+			<button class="stop" id="stop2h">2 h</button>
+		</span>
+		<button id="timerTest" style="display: none;">test</button>
+	</div>
+</div>
+<div id="history"></div>
+</body>
+</html>
