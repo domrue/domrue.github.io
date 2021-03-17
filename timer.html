@@ -144,8 +144,11 @@ var KEY = "history";
 window.HISTORY = JSON.parse(window.localStorage.getItem(KEY) ||  "null") || [];
 
 function displayInHistory(time, event){
+	var to_remove = 3; // don't show seconds
+	var time_text = ("" + new Date(time)).substr(0,24-to_remove).replace(/ 20\d\d /, " ")
+
 	var p = document.createElement("div");
-	p.textContent += time + ": " + event;
+	p.textContent += time_text + ": " + event;
 	var parent = document.getElementById('history');
 	parent.insertAdjacentElement('afterbegin', p);
 }
@@ -154,8 +157,7 @@ function addToHistory(time, event){
 	window.HISTORY.push({time: time, event: event});
 	window.localStorage.setItem(KEY, JSON.stringify(window.HISTORY));
 	console.log(window.HISTORY);
-	to_remove = 3; // don't show seconds
-	displayInHistory(("" + time).substr(0,24-to_remove).replace(/ 20\d\d /, " "), event);
+	displayInHistory(time, event);
 }
 
 
@@ -242,7 +244,7 @@ function stopTimer() {
 	window.clearTimeout(window.NotificationTimer);
 	window.clearTimeout(window.TimeboxNotificationTimer);
 	window.NotificationTimerFlashes = 0;
-	addToHistory(new Date(), "Stopped Timer.");
+	// addToHistory(new Date(), "Stopped Timer.");
 }
 
 var timeboxes = {}
@@ -418,7 +420,9 @@ document.addEventListener('DOMContentLoaded',function(){
 		
 		
 		// load history
-		
+		for (var index in window.HISTORY){
+			displayInHistory(window.HISTORY[index].time, window.HISTORY[index].event)
+		}
 		
 	});
 </script>
