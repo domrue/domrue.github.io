@@ -141,6 +141,8 @@ button.stop {
 
 var ICON_MATERIAL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAQAAAD/5HvMAAAEFElEQVRo3u1aH3x6URT/QjAYDAZBEASDHwQPBg/2+QwGQRAEQRAEQRAED4LBYDAIgiAYDAZBMAiCIAiCwSAIgmAwCH7w4P5gre65973XPfe90a9zsXvP+957vufPPTfgJCf5TyWPy1jrc8gmCaeILSZIWa8/xwc2cJOC40FAQKBvuT6FNwgI+KjGB3OG5x0cAYGmlY4nScNDjHMGkMZMUibg446to0Y0CIxwbk/ktaJsixJbSwO+ouXdjuBFbBVFGzhWG7sL0OTaEvkw5kgrcy5RRgc9DDHDCitM8YouPJQ0o1xhqWhjEZwS+Xu8kI/k0MZUmyN/bowGMgT8RJtlSHCVyAICHWLKRQQUOia4kZy/r/1uQPAgIpf3v7qR5xI8RvizX9/kEjyKyFkM2WB+DDjYJx4mwTuhRL7BxhLO91juz0kneCS9XwKJXNOO+uczXdRRxDWyyMJFCQ30NaP/mL4QSPCHY2lwrhA5RUL/AYqHfKgWF/cBJ+qjrRF8dNzT0tgQIvc0xRvUDRz2DB6+tLVtQvB3szTiSBG5ru2ygzPjiHaBrra+IEVwdgq5VbjzKcUVUykrfrWVwgC7yvtUYkbOSo+j0HxpW33SYL8ItXdQPFd5SSEN7HI0JXK4vY8DAhxiOJ9vthTJWH5kuWACCCgrCYUpVbK8FTnXDBAUj2O6x4qQMJUIoAsSlyYcOC7ZS+XIbFNAatmXMQf0SLwLiQE6IwmlYQ5Izse1BAEB95LmsSmcK+bBcgC5xHcNL0QtadHUYD4HEEiINLxUybWvlzggrnYAI2lJIXFADUl71wzQXFriJA6oJGl/BdvKmcQBuUyGSh8QEKz5ZoCykvbV7wK6N5qdkbSvzQDJ0TTNAOTjCRdHZ19L2mdmgOTCI8880c3RJkJRmj00A/QmLTFpUNWUUncW6ZvytaFnBmhgXAkdCoseuQ746IXWzd2QJkaEtG0SIByla/IVcnuTE3fZVLW8V84NQTXeXCt98+R3Y91rRnmmG49eDZ/JZz1+WFSvz6xSc+fYcvL5K91XUsRgbc6NVTA9Tb2z1Pf1sxfiYYJz7UwRLixgI5foQ+BDIjYtYJlam+YtpUjjXYe2w4rcJ4UlaRBcxX6kuCGRaspXUEmmQRDSuLB6GaLt33Gs56l3omtop8ZROjtjy1PKKlvb2D/mVbTOIp9LrtJt9C2aXiEXu296V1nxqKX1b2txvUNvly8MQ2VF60gLPMX2VpwHdvAnqEQwKoNa4ItIL957YrjhDm8+Ldwhvyt0M3BQgBfyHuKjjgSlor1R8MYnbpGwOIxnKd3AOfyKBNH02FhYVAusHNdUkkDUWKGaFI2jo8steiFvPocQ+pjcPxnMWdXGAG9Y7GLxGnOM0EcrgdrgJCc5ya/JP73t5EhoZfiQAAAAAElFTkSuQmCC"
 
+var NOTIFICATION_REPEAT_INTERVAL = 7; // seconds
+
 var KEY = "history";
 
 window.HISTORY = JSON.parse(window.localStorage.getItem(KEY) ||  "null") || [];
@@ -342,10 +344,10 @@ function notify(title, body, gentle){
 			window.clearTimeout(window.NotificationTimer);
 
 			if (window.NotificationTimerFlashes > 0){
-				console.log("Notifying in 15 seconds.");
+				console.log("Notifying in " + NOTIFICATION_REPEAT_INTERVAL + " seconds.");
 				window.NotificationTimer = window.setTimeout(function(){
 					notify(title, body);
-				}, 15000);
+				}, NOTIFICATION_REPEAT_INTERVAL * 1000);
 				window.NotificationTimerFlashes--;
 			}
 }
