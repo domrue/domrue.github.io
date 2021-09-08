@@ -1,9 +1,6 @@
 <!--
 	Timer with HTML5 Notifications
 	Dominik Rüegger
-	v 0.3	11. October 2017
-	v 0.2 	13. November 2015
-	v 0.1 	6. September 2015
 -->
 
 <html >
@@ -134,6 +131,61 @@ button.stop {
 
 .button-row {
 	text-align: center;
+}
+
+/* menus */
+
+.menu-button {
+	max-width: 4em;
+	position: relative;
+	display: inline-block;
+}
+
+.menu-hidden {
+	display: none;
+	position: absolute;
+	left: -6px;
+	max-width: 4em;
+	border-radius: 6px;
+	border: 6px solid #888;
+	background: gray;
+	z-index: 100000;
+}
+
+.menu-button:hover > .menu-hidden {
+	display: block;
+}
+
+.menu-button:hover > button {
+	border-bottom: 1px solid #fff;
+}
+
+
+/* labels */
+
+.label {
+	display: inline-block;
+	width: 0;
+	position: relative;
+	user-select: none;
+}
+
+.label-text {
+	position: absolute;
+	display: none;
+	font-family: inherit;
+	font-size: 0.3em;
+	color: #666;
+	top: 15px;
+	left: 0px;
+	border-top: 1px solid #666;
+	width: 10em;
+	padding: 0.2em;
+	text-align: left;
+}
+
+.group:hover .label-text {
+	display: block;
 }
 
 
@@ -415,37 +467,29 @@ function notifyTimebox(title, body, times){
 
 
 document.addEventListener('DOMContentLoaded',function(){
-		document.getElementById('break.5').addEventListener('click',function(){
-			startTimer(0.5, "BREAK");
-		});
 
-		document.getElementById('break1').addEventListener('click',function(){
-			startTimer(1, "BREAK");
-		});
+		var listener_config = {
+			"break": ["0.5", "1", "2", "5", "10", "15", "20", "30"],
+			"work": ["10", "15", "25"]
+		}
 		
-		document.getElementById('break2').addEventListener('click',function(){
-			startTimer(2, "BREAK");
-		});
-
-		document.getElementById('break5').addEventListener('click',function(){
-			startTimer(5, "BREAK");
-		});
+		function createListener(minutes, type){
+			return function(){
+				startTimer(minutes, type);
+			}
+		}
 		
-		document.getElementById('break10').addEventListener('click',function(){
-			startTimer(10, "BREAK");
-		});
-		
-		document.getElementById('break15').addEventListener('click',function(){
-			startTimer(15, "BREAK");
-		});
-		
-		document.getElementById('work25').addEventListener('click',function(){
-			startTimer(25, "WORK");
-		});
-
-		document.getElementById('work15').addEventListener('click',function(){
-			startTimer(15, "WORK");
-		});
+		for (var k of ["break", "work"]){
+			for (var i = 0; i < listener_config[k].length; i++){
+				var el_id = k + listener_config[k][i];
+				var el = document.getElementById(el_id);
+				if (el != null) {
+					el.addEventListener('click', 
+						createListener(parseFloat(listener_config[k][i]), k.toUpperCase())
+					);
+				}
+			}
+		}
 		
 		document.getElementById('stop1h').addEventListener('click',function(){
 			startTimer(60, "STOP", true);
@@ -487,19 +531,33 @@ document.addEventListener('DOMContentLoaded',function(){
 	</div>
 	<div class="button-row">
 		<span class="group">
+			<div class="label">
+				<div class="label-text">work</div>
+			</div><button class="work" id="work10">10 min</button>
 			<button class="work" id="work15">15 min</button>
 			<button class="work" id="work25">25 min</button>
 		</span>
 		<span class="group">
-			<button class="break" id="break.5">30 sec</button>
+		    <div class="label">
+				<div class="label-text">break</div>
+			</div><button class="break" id="break0.5">30 sec</button>
 			<button class="break" id="break1">1 min</button>
 			<button class="break" id="break2">2 min</button>
 			<button class="break" id="break5">5 min</button>
-			<button class="break" id="break10">10 min</button>
-			<button class="break" id="break15">15 min</button>
+			<div class="menu-button">
+				<button class="break" id="break+">+</button>
+				<div class="menu-hidden">
+					<button class="break" id="break10">10 min</button>
+					<button class="break" id="break15">15 min</button>
+					<button class="break" id="break20">20 min</button>
+					<button class="break" id="break30">30 min</button>
+				</div>
+            </div>
 		</span>
 		<span class="group">
-			<button class="stop" id="stop1h">1 h</button>
+			<div class="label">
+				<div class="label-text">stop</div>
+			</div><button class="stop" id="stop1h">1 h</button>
 			<button class="stop" id="stop2h">2 h</button>
 		</span>
 		<button id="timerTest" style="display: none;">test</button>
