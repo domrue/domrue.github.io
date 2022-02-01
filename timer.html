@@ -6,6 +6,7 @@
 <html >
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 
 body {
@@ -78,6 +79,7 @@ body {
 	border-bottom: 1px solid #aaa;
 	color: white;
 	text-shadow: 0px 0px 10px #ccf;
+        width: 30%;
 }
 
 #timebox-input > input:focus, #input:focus {
@@ -106,7 +108,7 @@ body {
 
 
 button {
-	color: #fff;
+    color: #fff;
     background-color: #559;
     border: 0px;
     border-radius: 5px;
@@ -115,6 +117,11 @@ button {
     text-shadow: 0px 0px 10px #fff;
     width: 4em;
     border-bottom: 1px solid #999;
+    margin: 5px
+}
+
+.menu-hidden > button {
+    margin: 0;
 }
 
 button:active {
@@ -130,6 +137,7 @@ button.stop {
 }
 
 .button-row {
+    margin-top: 0.8em;
 	text-align: center;
 }
 
@@ -144,7 +152,7 @@ button.stop {
 .menu-hidden {
 	display: none;
 	position: absolute;
-	left: -6px;
+	left: -0px;
 	max-width: 4em;
 	border-radius: 6px;
 	border: 6px solid #888;
@@ -513,7 +521,7 @@ document.addEventListener('DOMContentLoaded',function(){
 			startTimer(0.1, "TEST");
 		});		
 		
-		startTimer(5, "STOP", true); // start a reminder right away.
+		startTimer(15, "STOP", true); // start a reminder right away.
 		
 		
 		// load history
@@ -540,36 +548,7 @@ document.addEventListener('DOMContentLoaded',function(){
 		minutes
 	</div>
 	<div class="button-row">
-		<span class="group">
-			<div class="label">
-				<div class="label-text">work</div>
-			</div><button class="work" id="work10">10 min</button>
-			<button class="work" id="work15">15 min</button>
-			<button class="work" id="work25">25 min</button>
-		</span>
-		<span class="group">
-		    <div class="label">
-				<div class="label-text">break</div>
-			</div><button class="break" id="break0.5">30 sec</button>
-			<button class="break" id="break1">1 min</button>
-			<button class="break" id="break2">2 min</button>
-			<button class="break" id="break5">5 min</button>
-			<div class="menu-button">
-				<button class="break" id="break+">+</button>
-				<div class="menu-hidden">
-					<button class="break" id="break10">10 min</button>
-					<button class="break" id="break15">15 min</button>
-					<button class="break" id="break20">20 min</button>
-					<button class="break" id="break30">30 min</button>
-				</div>
-            </div>
-		</span>
-		<span class="group">
-			<div class="label">
-				<div class="label-text">stop</div>
-			</div><button class="stop" id="stop1h">1 h</button>
-			<button class="stop" id="stop2h">2 h</button>
-		</span>
+		<span class="group"><div class="label"><div class="label-text">work</div></div><button class="work" id="work10">10 min</button><button class="work" id="work15">15 min</button><button class="work" id="work25">25 min</button></span><span class="group"><div class="label"><div class="label-text">break</div></div><button class="break" id="break0.5">30 sec</button><button class="break" id="break1">1 min</button><button class="break" id="break2">2 min</button><button class="break" id="break5">5 min</button><span class="menu-button"><button class="break" id="break+">+</button><div class="menu-hidden"><button class="break" id="break10">10 min</button><button class="break" id="break15">15 min</button><button class="break" id="break20">20 min</button><button class="break" id="break30">30 min</button></div></span></span><span class="group"><div class="label"><div class="label-text">stop</div></div><button class="stop" id="stop1h">1 h</button><button class="stop" id="stop2h">2 h</button></span>
 		<button id="timerTest" style="display: none;">test</button>
 	</div>
 </div>
